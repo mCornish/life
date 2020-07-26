@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import PropTypes from 'prop-types';
-import { debounce } from 'lodash';
 import MatrixGrid from './MatrixGrid';
 import { Generation, nextGeneration } from '../modules/game';
 import useInterval from '@use-it/interval';
@@ -20,15 +19,13 @@ export default function ConwayGame({
 
   useInterval(playLoop, isPlaying ? 1000 : null)
 
-  const debouncedSetGridSize = useCallback(debounce(setGridSize, 200), []);
-
   return (
     <div className="container">
       <label htmlFor="size-control" className="size-control">
         <div>Size:</div>
         <input
           id="size-control"
-          onChange={e => debouncedSetGridSize(e.target.value)}
+          onChange={e => setGridSize(e.target.value)}
           value={size}
           type="number"
           max="100"
