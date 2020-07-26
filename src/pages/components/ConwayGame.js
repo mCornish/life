@@ -76,6 +76,7 @@ export default function ConwayGame({
   }
   
   function setGridSize(size) {
+    stop();
     updateGrid(size);
     setSize(size);
   }

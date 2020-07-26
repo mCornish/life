@@ -6,7 +6,7 @@ export default function MatrixGrid({
   matrix = [],
   onClick = () => {}
 }) {
-  const cellSize = 500 / matrix.length;
+  const cellSize = matrix.length ? 500 / matrix.length : 0;
   const cellColor = '#390f70';
   const lineWidth = 1;
   const gapSize = cellSize * .3;
@@ -65,11 +65,39 @@ export default function MatrixGrid({
       ctx.closePath();
       ctx.stroke();
     }
-  }, [cellSize, cellColor, gapSize, height, lineWidth, matrix, width]);
+  }, [cellSize, cellColor, gapSize, gridSize, height, lineWidth, matrix, width]);
 
   return (
-    <canvas ref={element} width={gridSize} height={gridSize} />
+    <canvas
+      ref={element}
+      width={gridSize}
+      height={gridSize}
+      onClick={toggleCell}
+    />
   );
+
+  function toggleCell(e) {
+    const elementRect = element.current.getBoundingClientRect();
+    const elementX = elementRect.left;
+    const elementY = elementRect.top;
+    const x = e.clientX - elementX;
+    const y = e.clientY - elementY;
+
+    const {row, column, isAlive} = positionCell(x, y);
+    onClick(row, column, !isAlive);
+  }
+
+  function positionCell(x, y) {
+    const cellSpace = cellSize + gapSize;
+    const row = Math.floor((y + (gapSize / 2)) / cellSpace);
+    const column = Math.floor((x + (gapSize / 2)) / cellSpace);
+
+    return {
+      row,
+      column,
+      isAlive: matrix[row][column]
+    };
+  }
 }
 
 MatrixGrid.propTypes = {
