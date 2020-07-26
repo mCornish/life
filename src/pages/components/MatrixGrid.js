@@ -16,6 +16,9 @@ export default function MatrixGrid({
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
 
+  const [mouseIsDown, setMouseIsDown] = useState(false);
+  const [selectedCell, setSelectedCell] = useState(null);
+
   useEffect(() => {
     setHeight(matrix.length);
     setWidth(matrix.length ? matrix[0].length : 0);
@@ -73,8 +76,32 @@ export default function MatrixGrid({
       width={gridSize}
       height={gridSize}
       onClick={toggleCell}
+      onMouseDown={() => setMouseIsDown(true)}
+      onMouseMove={checkToggle}
+      onMouseUp={() => setMouseIsDown(false)}
     />
   );
+
+  function checkToggle(e) {
+    console.log("checkToggle -> mouseIsDown", mouseIsDown)
+    if (!mouseIsDown) return undefined;
+
+    const elementRect = element.current.getBoundingClientRect();
+    const elementX = elementRect.left;
+    const elementY = elementRect.top;
+    const x = e.clientX - elementX;
+    const y = e.clientY - elementY;
+
+    const cell = positionCell(x, y);
+    if (isSelectedCell(cell)) return undefined;
+
+    setSelectedCell(cell);
+    onClick(cell.row, cell.column, !cell.isAlive);
+  }
+
+  function isSelectedCell(cell) {
+    return selectedCell && selectedCell.row === cell.row && selectedCell.column === cell.column;
+  }
 
   function toggleCell(e) {
     const elementRect = element.current.getBoundingClientRect();
@@ -83,8 +110,8 @@ export default function MatrixGrid({
     const x = e.clientX - elementX;
     const y = e.clientY - elementY;
 
-    const {row, column, isAlive} = positionCell(x, y);
-    onClick(row, column, !isAlive);
+    const cell = positionCell(x, y);
+    if (!isSelectedCell(cell)) onClick(cell.row, cell.column, !cell.isAlive);
   }
 
   function positionCell(x, y) {
