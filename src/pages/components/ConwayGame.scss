@@ -1,0 +1,19 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  > * + * {
+    margin-top: 1em;
+  }
+}
+.size-control,
+.ConwayGame__buttons {
+  > * + * {
+    margin-left: 1em;
+  }
+}
+
+.size-control {
+  display: flex;
+}

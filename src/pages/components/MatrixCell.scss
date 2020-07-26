@@ -1,0 +1,17 @@
+$color: #390f70;
+
+.cell {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: transparent;
+  border: .3em solid $color;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.cell:hover,
+.is-alive {
+  background-color: $color;  
+}
