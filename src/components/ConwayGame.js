@@ -20,7 +20,7 @@ export default function ConwayGame({
   useInterval(playLoop, isPlaying ? 1000 : null)
 
   return (
-    <div className="container">
+    <div className="ConwayGame">
       <label htmlFor="size-control" className="size-control">
         <div>Size:</div>
         <input
@@ -29,7 +29,7 @@ export default function ConwayGame({
           value={size}
           type="number"
           max="100"
-          min="0"
+          min="1"
         />
       </label>
 

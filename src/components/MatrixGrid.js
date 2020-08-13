@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { uniqBy } from 'lodash';
 import './MatrixGrid.scss';
 
 export default function MatrixGrid({
@@ -16,6 +17,7 @@ export default function MatrixGrid({
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
 
+  const [changed, setChanged] = useState([]);
   const [mouseIsDown, setMouseIsDown] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
 
@@ -73,17 +75,18 @@ export default function MatrixGrid({
   return (
     <canvas
       ref={element}
+      role="grid"
       width={gridSize}
       height={gridSize}
       onClick={toggleCell}
       onMouseDown={() => setMouseIsDown(true)}
       onMouseMove={checkToggle}
-      onMouseUp={() => setMouseIsDown(false)}
+      onMouseUp={() => handleMouseUp()}
+      alt="Matrix grid"
     />
   );
 
   function checkToggle(e) {
-    console.log("checkToggle -> mouseIsDown", mouseIsDown)
     if (!mouseIsDown) return undefined;
 
     const elementRect = element.current.getBoundingClientRect();
@@ -93,14 +96,20 @@ export default function MatrixGrid({
     const y = e.clientY - elementY;
 
     const cell = positionCell(x, y);
-    if (isSelectedCell(cell)) return undefined;
+    if (isSelectedCell(cell) || wasChanged(cell)) return undefined;
 
     setSelectedCell(cell);
-    onClick(cell.row, cell.column, !cell.isAlive);
+    setChanged(uniqBy([...changed, cell], 'key'));
+    onClick(cell.x, cell.y, !cell.isAlive);
+  }
+
+  function handleMouseUp() {
+    setMouseIsDown(false);
+    setChanged([]);
   }
 
   function isSelectedCell(cell) {
-    return selectedCell && selectedCell.row === cell.row && selectedCell.column === cell.column;
+    return selectedCell && selectedCell.isCell(cell);
   }
 
   function toggleCell(e) {
@@ -111,23 +120,47 @@ export default function MatrixGrid({
     const y = e.clientY - elementY;
 
     const cell = positionCell(x, y);
-    if (!isSelectedCell(cell)) onClick(cell.row, cell.column, !cell.isAlive);
+    if (!isSelectedCell(cell)) onClick(cell.x, cell.y, !cell.isAlive);
   }
 
   function positionCell(x, y) {
     const cellSpace = cellSize + gapSize;
-    const row = Math.floor((y + (gapSize / 2)) / cellSpace);
-    const column = Math.floor((x + (gapSize / 2)) / cellSpace);
+    const cellX = Math.floor((y + (gapSize / 2)) / cellSpace);
+    const cellY = Math.floor((x + (gapSize / 2)) / cellSpace);
 
-    return {
-      row,
-      column,
-      isAlive: matrix[row][column]
-    };
+    return Cell({
+      x: cellX,
+      y: cellY,
+      isAlive: matrix[cellX][cellY]
+    });
+  }
+
+  function wasChanged(cell) {
+    return changed.find(({x, y}) => x === cell.x && y === cell.y);
   }
 }
 
 MatrixGrid.propTypes = {
   matrix: PropTypes.array,
   onClick: PropTypes.func
+}
+
+function Cell({x, y, isAlive}) {
+  return {
+    get x() {
+      return x;
+    },
+    get y() {
+      return y;
+    },
+    get isAlive() {
+      return isAlive;
+    },
+    get key() {
+      return `${x}-${y}`;
+    },
+    isCell(cell) {
+      return cell.x === x && cell.y === y;
+    }
+  };
 }
